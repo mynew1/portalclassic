@@ -1382,12 +1382,18 @@ bool ScriptAction::HandleScriptStep()
         }
         case SCRIPT_COMMAND_CAST_SPELL:                     // 15
         {
-            if (LogIfNotUnit(pSource))
-                break;
-            if (LogIfNotUnit(pTarget))
+            if (LogIfNotUnit(pTarget))                      // TODO - Change when support for casting without victim will be supported
                 break;
 
             // TODO: when GO cast implemented, code below must be updated accordingly to also allow GO spell cast
+            if (pSource && pSource->GetTypeId() == TYPEID_GAMEOBJECT)
+            {
+                ((Unit*)pTarget)->CastSpell(((Unit*)pTarget), m_script->castSpell.spellId, true, NULL, NULL, pSource->GetObjectGuid());
+                break;
+            }
+
+            if (LogIfNotUnit(pSource))
+                break;
             ((Unit*)pSource)->CastSpell(((Unit*)pTarget), m_script->castSpell.spellId, (m_script->data_flags & SCRIPT_FLAG_COMMAND_ADDITIONAL) != 0);
 
             break;
@@ -1591,6 +1597,8 @@ bool ScriptAction::HandleScriptStep()
                 pGo->SetFlag(GAMEOBJECT_FLAGS, GO_FLAG_NO_INTERACT);
             else if (m_script->goLockState.lockState & 0x08)
                 pGo->RemoveFlag(GAMEOBJECT_FLAGS, GO_FLAG_NO_INTERACT);
+
+            break;
         }
         case SCRIPT_COMMAND_STAND_STATE:                    // 28
         {
